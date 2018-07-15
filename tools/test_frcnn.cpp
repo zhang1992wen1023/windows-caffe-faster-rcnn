@@ -144,7 +144,7 @@ int main(int argc, char** argv){
 	const int max_per_image = FLAGS_max_per_image;
 
 	//API::Set_Config(default_config_file);
-	API::Detector detector(proto_file, model_file, default_config_file, gpu_id >= 0, false);
+	API::Detector detector(proto_file, model_file, default_config_file, gpu_id >= 0);
 
 	LOG(INFO) << "image  list    : " << image_list;
 	LOG(INFO) << "output file    : " << out_file;

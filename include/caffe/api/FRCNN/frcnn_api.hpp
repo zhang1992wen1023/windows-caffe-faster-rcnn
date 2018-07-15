@@ -30,7 +30,7 @@ namespace FRCNN_API{
 	public:
 		//构造函数
 		Detector(const std::string &proto_file, const std::string &model_file, const std::string& config_file,
-			bool useGPU = true, bool ignoreLog = true);
+			bool useGPU = true);
 		//对一张图片进行检测
 		vector<BBox<float> > predict(const cv::Mat& img_in);
 		void predict(const cv::Mat& img_in, vector<BBox<float> >& boxes);  //重载

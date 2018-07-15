@@ -412,6 +412,7 @@ message LayerParameter {
   optional SmoothL1LossParameter smooth_l1_loss_param = 202;
   optional VideoDataParameter video_data_param = 203;
   optional ROIMaskPoolingParameter roi_mask_pooling_param = 204;
+  optional RPNParameter rpn_param = 205;  
 }
 
 // Xuanyi ..
@@ -1496,3 +1497,13 @@ message PSROIPoolingParameter {
    required int32 output_dim = 2; // output channel number
    required int32 group_size = 3; // number of groups to encode position-sensitive score maps
  }
+message RPNParameter {  
+  optional uint32 feat_stride = 1;  
+  optional uint32 basesize = 2;  
+  repeated uint32 scale = 3;  
+  repeated float ratio = 4;  
+  optional uint32 boxminsize =5;  
+  optional uint32 per_nms_topn = 9;  
+  optional uint32 post_nms_topn = 11;  
+  optional float nms_thresh = 8;  
+}

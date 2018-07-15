@@ -3,10 +3,12 @@
 namespace FRCNN_API{
 
 	Detector::Detector(const std::string &proto_file, const std::string &model_file, const std::string& config_file,
-		bool useGPU, bool ignoreLog)
+		bool useGPU)
 	{
+		/*
 		if (ignoreLog)  //关闭打印日志
 			google::InitGoogleLogging("VR");
+		*/	
 		if (useGPU)
 			caffe::Caffe::set_mode(caffe::Caffe::GPU);
 		else
@@ -98,17 +100,26 @@ namespace FRCNN_API{
 		CHECK(FrcnnParam::test_scales.size() == 1) << "Only single-image batch implemented";
 
 		float scale_factor = caffe::Frcnn::get_scale_factor(img_in.cols, img_in.rows, FrcnnParam::test_scales[0], FrcnnParam::test_max_size);
+		
+		int SCALE_MULTIPLE_OF = 32;
+		// Make width and height be multiple of a specified number使宽度和高度为指定数值的倍数
+		float im_scale_x = std::floor(img_in.cols * scale_factor / SCALE_MULTIPLE_OF) * SCALE_MULTIPLE_OF / img_in.cols;
+		float im_scale_y = std::floor(img_in.rows * scale_factor / SCALE_MULTIPLE_OF) * SCALE_MULTIPLE_OF / img_in.rows;
+		
 		cv::Mat img;
 		const int height = img_in.rows;
 		const int width = img_in.cols;
 		DLOG(INFO) << "height: " << height << " width: " << width;
 		img_in.convertTo(img, CV_32FC3);    //转为float32位
 
-		cv::resize(img, img, cv::Size(), scale_factor, scale_factor);  //变成1000*539大小
-		std::vector<float> im_info(3);
+		cv::resize(img, img, cv::Size(), im_scale_x, im_scale_y);  //变成1000*539大小
+	//	std::vector<float> im_info(3);
+		std::vector<float> im_info(4);
 		im_info[0] = img.rows;
 		im_info[1] = img.cols;
-		im_info[2] = scale_factor;
+	//	im_info[2] = scale_factor;
+		im_info[2] = im_scale_x;
+		im_info[3] = im_scale_y;
 
 		this->preprocess(img, 0);    //将图片(1000*539)， 送入到网络的输入层input_blobs
 		this->preprocess(im_info, 1);
@@ -136,10 +147,10 @@ namespace FRCNN_API{
 				if (score >= FrcnnParam::test_score_thresh){   //只有满足阈值时
 					//求出该roi在原图（800*430）的坐标
 					Point4f<float> roi(
-						rois->cpu_data()[(i * 5) + 1] / scale_factor,
-						rois->cpu_data()[(i * 5) + 2] / scale_factor,
-						rois->cpu_data()[(i * 5) + 3] / scale_factor,
-						rois->cpu_data()[(i * 5) + 4] / scale_factor);
+						rois->cpu_data()[(i * 5) + 1] / im_scale_x,
+						rois->cpu_data()[(i * 5) + 2] / im_scale_y,
+						rois->cpu_data()[(i * 5) + 3] / im_scale_x,
+						rois->cpu_data()[(i * 5) + 4] / im_scale_y);
 					//求出该roi偏移的4个系数
 					Point4f<float> delta(
 						bbox_pred->cpu_data()[(i * cls_num + cls) * 4 + 0],
@@ -174,12 +185,14 @@ namespace FRCNN_API{
 			}
 		}
 	}
+	
 	void Detector::predict_iterative(const cv::Mat &img_in, std::vector<caffe::Frcnn::BBox<float> > &results) {
 
 		CHECK(FrcnnParam::test_scales.size() == 1) << "Only single-image batch implemented";
 		CHECK(FrcnnParam::iter_test >= 1) << "iter_test should greater and queal than 1";
 
 		float scale_factor = caffe::Frcnn::get_scale_factor(img_in.cols, img_in.rows, FrcnnParam::test_scales[0], FrcnnParam::test_max_size);
+
 
 		cv::Mat img;
 		const int height = img_in.rows;
@@ -194,7 +207,7 @@ namespace FRCNN_API{
 				reinterpret_cast<float *>(img.data)[offset + 2] -= this->mean_[2]; // R
 			}
 		}
-		cv::resize(img, img, cv::Size(), scale_factor, scale_factor);
+		cv::resize(img, img, cv::Size(), scale_factor);
 
 		std::vector<float> im_info(3);
 		im_info[0] = img.rows;
@@ -307,5 +320,5 @@ namespace FRCNN_API{
 		}
 
 	}
-
+	
 }// FRCNN_API

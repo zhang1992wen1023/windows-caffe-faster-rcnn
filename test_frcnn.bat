@@ -1,7 +1,7 @@
 @Build\x64\Release\test_frcnn.exe ^
 --gpu 0 ^
---model models\FRCNN\vgg_m_test.prototxt ^
---weights models\FRCNN\VGG16_faster_rcnn_final.caffemodel ^
+--model examples\FRCNN\vgg_m_test.prototxt ^
+--weights examples\FRCNN\VGG16_faster_rcnn_final.caffemodel ^
 --default_c examples\FRCNN\config\voc_config.json ^
 --image_root VOCdevkit\VOC2007\JPEGImages\ ^
 --image_list examples\FRCNN\dataset\voc2007.test ^
